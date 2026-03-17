@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import lshunImg from "./assets/lshun.jpg";
+import kentobossImg from "./assets/Kentoboss.jpg";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 // ─── Constants ───────────────────────────────────────────────
@@ -68,7 +69,7 @@ const PROFILES = {
     ],
   },
   kentoboss: {
-    image: null,
+    image: kentobossImg,
     twitter: "kentoboss",
     gear: [
       { icon: "🎮", label: "デバイス", value: "DualSense Edge", url: "https://www.amazon.co.jp/dp/B0BJTJNQFD" },
