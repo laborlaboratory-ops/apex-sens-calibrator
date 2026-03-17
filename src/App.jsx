@@ -40,7 +40,7 @@ const PRESET_DATA = {
   satuki: { raw: { "1x": 2.65, "2x": 2.87, "3x": 2.87, "4x": 2.87, "6x": 3.4, "8x": 3.4, "10x": 3.5 }, iron: 2.65 },
   curihara: { raw: { "1x": 1.0, "2x": 1.0, "3x": 1.1, "4x": 1.1, "6x": 1.1, "8x": 1.1, "10x": 1.1 }, iron: 1.0 },
   lykq: { raw: { "1x": 2.7, "2x": 2.6, "3x": 2.6, "4x": 2.6, "6x": 4.0, "8x": 4.0, "10x": 4.0 }, iron: 2.7 },
-  shiro: { raw: { "1x": 1.1, "2x": 1.14, "3x": 1.22, "4x": 1.3, "6x": 1.38, "8x": 1.46, "10x": 1.56 }, iron: 1.1 },
+  kentoboss: { raw: { "1x": 4.33, "2x": 4.28, "3x": 4.45, "4x": 4.47, "6x": 4.1, "8x": 4.4, "10x": 4.6 }, iron: 4.33 },
 };
 
 const PRESET_RATIOS = {};
@@ -52,14 +52,29 @@ const PRESETS = [
   { id: "satuki", name: "satuki", desc: "ZETA — 1x〜4x統一＋6x以上ジャンプ型", tag: "プロ" },
   { id: "lykq", name: "Lykq", desc: "4-1リニア — 中距離統一＋遠距離別枠型", tag: "プロ" },
   { id: "lshun", name: "Lスターしゅんしゅん", desc: "4-4クラシック — cfg精密調整型", tag: "配信者" },
-  { id: "shiro", name: "shiro", desc: "3-3クラシック — 段階的均等補正型", tag: "研究者" },
+  { id: "kentoboss", name: "kentoboss", desc: "4.3フラット — リニア入力・デッドゾーン無し", tag: "配信者" },
   { id: "curihara", name: "Curihara", desc: "4-3リニア — 微調整ミニマル型", tag: "プロ" },
   { id: "default", name: "デフォルト", desc: "APEX初期値 — 全スコープ 1.0", tag: "参考" },
 ];
 
 // ─── Profiles ────────────────────────────────────────────────
 const PROFILES = {
-  lshun: { image: lshunImg, device: "DualSense Edge", freak: "ProFreak V2 凸型", twitter: "shunshun_Games" },
+  lshun: {
+    image: lshunImg,
+    twitter: "shunshun_Games",
+    gear: [
+      { icon: "🎮", label: "デバイス", value: "DualSense Edge", url: "https://www.amazon.co.jp/dp/B0BJTJNQFD" },
+      { icon: "🕹️", label: "フリーク", value: "ProFreak V2 凸型", url: "https://www.amazon.co.jp/dp/B0BQM45DCH" },
+    ],
+  },
+  kentoboss: {
+    image: null,
+    twitter: "kentoboss",
+    gear: [
+      { icon: "🎮", label: "デバイス", value: "DualSense Edge", url: "https://www.amazon.co.jp/dp/B0BJTJNQFD" },
+      { icon: "🖥️", label: "モニター", value: "INZONE M10S", url: "https://www.amazon.co.jp/dp/B0DHRTWZFC" },
+    ],
+  },
 };
 
 // Iron sight (scalar_7) ratios per preset
@@ -490,26 +505,27 @@ export default function ApexSensCalc() {
             return (
               <div className="profile-cards">
                 <div className="profile-card">
-                  <img src={p.image} alt={preset} className="profile-avatar" />
+                  {p.image
+                    ? <img src={p.image} alt={preset} className="profile-avatar" />
+                    : <div style={{ width: 48, height: 48, borderRadius: "50%", background: "var(--bg-card)", border: "2px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 18, color: "var(--text-dim)", fontWeight: 700 }}>
+                        {p.twitter[0].toUpperCase()}
+                      </div>
+                  }
                   <div className="profile-info">
                     <span className="profile-label">X (Twitter)</span>
                     <a className="profile-twitter" href={`https://x.com/${p.twitter}`} target="_blank" rel="noopener noreferrer">@{p.twitter}</a>
                   </div>
                 </div>
-                <div className="profile-card">
-                  <div style={{ width: 48, height: 48, borderRadius: "50%", background: "var(--bg-card)", border: "2px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 20 }}>🎮</div>
-                  <div className="profile-info">
-                    <span className="profile-label">デバイス</span>
-                    <span className="profile-value">{p.device}</span>
-                  </div>
-                </div>
-                <div className="profile-card">
-                  <div style={{ width: 48, height: 48, borderRadius: "50%", background: "var(--bg-card)", border: "2px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 20 }}>🕹️</div>
-                  <div className="profile-info">
-                    <span className="profile-label">フリーク</span>
-                    <span className="profile-value">{p.freak}</span>
-                  </div>
-                </div>
+                {p.gear.map((g) => (
+                  <a key={g.label} className="profile-card" href={g.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                    <div style={{ width: 48, height: 48, borderRadius: "50%", background: "var(--bg-card)", border: "2px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 20 }}>{g.icon}</div>
+                    <div className="profile-info">
+                      <span className="profile-label">{g.label}</span>
+                      <span className="profile-value">{g.value}</span>
+                      <span style={{ fontSize: 9, color: "var(--text-dim)" }}>Amazonで見る →</span>
+                    </div>
+                  </a>
+                ))}
               </div>
             );
           })()}
