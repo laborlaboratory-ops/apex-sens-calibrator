@@ -393,10 +393,10 @@ export default function ApexSensCalc() {
 
   const chartData = useMemo(() => results.map((r, i) => {
     const d = { name: r.name };
-    d[mainName] = parseFloat(r.ratio.toFixed(3));
+    d[mainName] = parseFloat(r.scalar.toFixed(3));
     d[compareName] = parseFloat(activeCompareResults[i].ratio.toFixed(3));
-    if (hasRaw) d[rawName] = parseFloat((rawData[i] / PRESET_DATA[preset].raw["1x"]).toFixed(3));
-    if (hasCurrent) d["現在の感度"] = parseFloat((currentParsed[r.name] / sens1x).toFixed(3));
+    if (hasRaw) d[rawName] = parseFloat(rawData[i].toFixed(3));
+    if (hasCurrent) d["現在の感度"] = parseFloat(currentParsed[r.name].toFixed(3));
     return d;
   }), [results, activeCompareResults, hasRaw, rawData, hasCurrent, currentParsed, sens1x, mainName, compareName, rawName, preset]);
 
@@ -692,7 +692,7 @@ export default function ApexSensCalc() {
               <XAxis dataKey="name" tick={{ fill: "#7a7a90", fontSize: 12, fontFamily: "'Chakra Petch', sans-serif" }}
                 axisLine={{ stroke: "#1a1a2e" }} tickLine={false} />
               <YAxis tick={{ fill: "#4a4a5e", fontSize: 11, fontFamily: "'Share Tech Mono', monospace" }}
-                axisLine={false} tickLine={false} domain={[0, chartMax]} tickFormatter={(v) => `${v.toFixed(1)}x`} />
+                axisLine={false} tickLine={false} domain={[0, chartMax]} tickFormatter={(v) => v.toFixed(1)} />
               <Tooltip content={<ChartTooltip />} />
               <Bar dataKey={compareName} fill="#e8a83c" radius={[3, 3, 0, 0]} />
               {hasRaw && <Bar dataKey={rawName} fill="#e8413c" radius={[3, 3, 0, 0]} />}
