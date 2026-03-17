@@ -621,10 +621,9 @@ export default function ApexSensCalc() {
                 <th>スコープ</th>
                 <th>1x基準倍率</th>
                 <th>比率</th>
-                <th>ゲーム内設定</th>
+                {hasRaw && <th style={{ color: "#e8413c" }}>{mainName}（元値）</th>}
+                <th style={{ color: "#a855f7" }}>生成感度</th>
                 <th>cfg値</th>
-                <th style={{ color: "#e8a83c" }}>{compareName}</th>
-                {hasRaw && <th style={{ color: "#a855f7" }}>{mainName}（元値）</th>}
                 {hasCurrent && <th style={{ color: "var(--apex-blue)" }}>現在値</th>}
               </tr>
             </thead>
@@ -634,10 +633,9 @@ export default function ApexSensCalc() {
                   <td>{r.name}</td>
                   <td>{r.zoomFrom1x.toFixed(2)}x</td>
                   <td>{r.ratio.toFixed(4)}</td>
-                  <td className="hl-red">{r.scalar.toFixed(2)}</td>
+                  {hasRaw && <td style={{ color: "#e8413c" }}>{rawData[i].toFixed(2)}</td>}
+                  <td style={{ color: "#a855f7", fontWeight: 500 }}>{r.scalar.toFixed(2)}</td>
                   <td style={{ fontSize: 12 }}>{r.scalar.toFixed(6)}</td>
-                  <td style={{ color: "#e8a83c" }}>{activeCompareResults[i].scalar.toFixed(2)}</td>
-                  {hasRaw && <td style={{ color: "#a855f7" }}>{rawData[i].toFixed(2)}</td>}
                   {hasCurrent && <td className="hl-blue">{currentParsed[r.name].toFixed(2)}</td>}
                 </tr>
               ))}
@@ -696,26 +694,24 @@ export default function ApexSensCalc() {
               <YAxis tick={{ fill: "#4a4a5e", fontSize: 11, fontFamily: "'Share Tech Mono', monospace" }}
                 axisLine={false} tickLine={false} domain={[0, chartMax]} tickFormatter={(v) => `${v.toFixed(1)}x`} />
               <Tooltip content={<ChartTooltip />} />
-              <Bar dataKey={mainName} radius={[3, 3, 0, 0]}>
-                {chartData.map((_, i) => <Cell key={i} fill={i === 0 ? "#e8413c" : "#c43530"} />)}
-              </Bar>
               <Bar dataKey={compareName} fill="#e8a83c" radius={[3, 3, 0, 0]} />
-              {hasRaw && <Bar dataKey={rawName} fill="#a855f7" radius={[3, 3, 0, 0]} />}
+              {hasRaw && <Bar dataKey={rawName} fill="#e8413c" radius={[3, 3, 0, 0]} />}
+              <Bar dataKey={mainName} fill="#a855f7" radius={[3, 3, 0, 0]} />
               {hasCurrent && <Bar dataKey="現在の感度" fill="#4a8fd4" radius={[3, 3, 0, 0]} />}
             </BarChart>
           </ResponsiveContainer>
           <div style={{ display: "flex", gap: 16, marginTop: 8, fontSize: 11, color: "#4a4a5e", flexWrap: "wrap" }}>
             <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#e8413c" }} />{mainName}
-            </span>
-            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#e8a83c" }} />{compareName}
             </span>
             {hasRaw && (
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#a855f7" }} />{rawName}
+                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#e8413c" }} />{rawName}
               </span>
             )}
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#a855f7" }} />{mainName}（生成）
+            </span>
             {hasCurrent && (
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#4a8fd4" }} />現在の感度
