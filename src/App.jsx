@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
+import lshunImg from "./assets/lshun.jpg";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 // ─── Constants ───────────────────────────────────────────────
@@ -50,11 +51,16 @@ const PRESETS = [
   { id: "aruta", name: "あるた", desc: "1x〜4xフラット型 — 高感度バランス", tag: "配信者" },
   { id: "satuki", name: "satuki", desc: "ZETA — 1x〜4x統一＋6x以上ジャンプ型", tag: "プロ" },
   { id: "lykq", name: "Lykq", desc: "4-1リニア — 中距離統一＋遠距離別枠型", tag: "プロ" },
-  { id: "lshun", name: "Lしゅん", desc: "4-4クラシック — cfg精密調整型", tag: "配信者" },
+  { id: "lshun", name: "Lスターしゅんしゅん", desc: "4-4クラシック — cfg精密調整型", tag: "配信者" },
   { id: "shiro", name: "shiro", desc: "3-3クラシック — 段階的均等補正型", tag: "研究者" },
   { id: "curihara", name: "Curihara", desc: "4-3リニア — 微調整ミニマル型", tag: "プロ" },
   { id: "default", name: "デフォルト", desc: "APEX初期値 — 全スコープ 1.0", tag: "参考" },
 ];
+
+// ─── Profiles ────────────────────────────────────────────────
+const PROFILES = {
+  lshun: { image: lshunImg, device: "DualSense Edge", freak: "ProFreak V2 凸型", twitter: "shunshun_Games" },
+};
 
 // Iron sight (scalar_7) ratios per preset
 const IRON_RATIOS = {};
@@ -238,6 +244,21 @@ style.textContent = `
   .save-msg { font-size: 11px; color: #4ad480; animation: fadeMsg 2.5s forwards; }
   @keyframes fadeMsg { 0%,70% { opacity:1; } 100% { opacity:0; } }
   .mouse-extra { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .profile-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  @media (max-width: 600px) { .profile-cards { grid-template-columns: 1fr; } }
+  .profile-card {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 12px;
+  }
+  .profile-avatar {
+    width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+    border: 2px solid var(--border);
+  }
+  .profile-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .profile-label { font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); }
+  .profile-value { font-size: 12px; color: var(--text-primary); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .profile-twitter { font-size: 11px; color: var(--apex-blue); text-decoration: none; }
+  .profile-twitter:hover { text-decoration: underline; }
   .power-slider-wrap {
     margin-top: 14px; padding: 16px; background: rgba(232,65,60,0.04);
     border: 1px solid rgba(232,65,60,0.12); border-radius: 6px;
@@ -464,6 +485,34 @@ export default function ApexSensCalc() {
               </button>
             ))}
           </div>
+          {PROFILES[preset] && (() => {
+            const p = PROFILES[preset];
+            return (
+              <div className="profile-cards">
+                <div className="profile-card">
+                  <img src={p.image} alt={preset} className="profile-avatar" />
+                  <div className="profile-info">
+                    <span className="profile-label">X (Twitter)</span>
+                    <a className="profile-twitter" href={`https://x.com/${p.twitter}`} target="_blank" rel="noopener noreferrer">@{p.twitter}</a>
+                  </div>
+                </div>
+                <div className="profile-card">
+                  <div style={{ width: 48, height: 48, borderRadius: "50%", background: "var(--bg-card)", border: "2px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 20 }}>🎮</div>
+                  <div className="profile-info">
+                    <span className="profile-label">デバイス</span>
+                    <span className="profile-value">{p.device}</span>
+                  </div>
+                </div>
+                <div className="profile-card">
+                  <div style={{ width: 48, height: 48, borderRadius: "50%", background: "var(--bg-card)", border: "2px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 20 }}>🕹️</div>
+                  <div className="profile-info">
+                    <span className="profile-label">フリーク</span>
+                    <span className="profile-value">{p.freak}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
           {preset === "unified" && (
             <div className="power-slider-wrap">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
