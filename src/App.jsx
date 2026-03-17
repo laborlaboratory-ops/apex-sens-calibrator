@@ -502,7 +502,7 @@ export default function ApexSensCalc() {
         <div className="section-label">プリセット</div>
         <div className="card">
           <div className="filter-row">
-            {["すべて", "計算", "配信者", "プロ", "参考"].map((tag) => (
+            {["すべて", "配信者", "プロ"].map((tag) => (
               <button key={tag} className={`filter-btn${tagFilter === tag ? " active" : ""}`} onClick={() => setTagFilter(tag)}>{tag}</button>
             ))}
           </div>
