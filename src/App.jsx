@@ -260,6 +260,14 @@ style.textContent = `
   .save-msg { font-size: 11px; color: #4ad480; animation: fadeMsg 2.5s forwards; }
   @keyframes fadeMsg { 0%,70% { opacity:1; } 100% { opacity:0; } }
   .mouse-extra { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .filter-btn {
+    font-family: 'Chakra Petch', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase; padding: 4px 12px; border-radius: 20px;
+    border: 1px solid var(--border); background: var(--bg-input); color: var(--text-dim); cursor: pointer; transition: all 0.2s;
+  }
+  .filter-btn:hover { border-color: #353550; color: var(--text-secondary); }
+  .filter-btn.active { background: rgba(232,65,60,0.12); border-color: var(--apex-red); color: var(--apex-red); }
   .profile-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
   @media (max-width: 600px) { .profile-cards { grid-template-columns: 1fr; } }
   .profile-card {
@@ -331,6 +339,7 @@ export default function ApexSensCalc() {
   const [saveMsg, setSaveMsg] = useState("");
   const [linearPower, setLinearPower] = useState(0.2);
   const [comparePreset, setComparePreset] = useState("none");
+  const [tagFilter, setTagFilter] = useState("すべて");
 
   // Load saved data
   useEffect(() => {
@@ -492,8 +501,13 @@ export default function ApexSensCalc() {
         {/* ─── Presets ─── */}
         <div className="section-label">プリセット</div>
         <div className="card">
+          <div className="filter-row">
+            {["すべて", "計算", "配信者", "プロ", "参考"].map((tag) => (
+              <button key={tag} className={`filter-btn${tagFilter === tag ? " active" : ""}`} onClick={() => setTagFilter(tag)}>{tag}</button>
+            ))}
+          </div>
           <div className="preset-grid">
-            {PRESETS.map((p) => (
+            {PRESETS.filter((p) => tagFilter === "すべて" || p.tag === tagFilter).map((p) => (
               <button key={p.id} className={`preset-btn${preset === p.id ? " active" : ""}`} onClick={() => { setPreset(p.id); if (comparePreset === p.id) setComparePreset("none"); }}>
                 <div className="preset-tag" data-tag={p.tag}>{p.tag}</div>
                 <div className="preset-name">{p.name}</div>
