@@ -55,7 +55,6 @@ const PRESETS = [
   { id: "lshun", name: "Lスターしゅんしゅん", desc: "4-4クラシック — cfg精密調整型", tag: "配信者" },
   { id: "kentoboss", name: "kentoboss", desc: "4.3フラット — リニア入力・デッドゾーン無し", tag: "配信者" },
   { id: "curihara", name: "Curihara", desc: "4-3リニア — 微調整ミニマル型", tag: "プロ" },
-  { id: "default", name: "デフォルト", desc: "APEX初期値 — 全スコープ 1.0", tag: "参考" },
 ];
 
 // ─── Profiles ────────────────────────────────────────────────
@@ -376,22 +375,25 @@ export default function ApexSensCalc() {
   }, [currentSens]);
 
   const hasCurrent = showCurrent && Object.values(currentSens).some((v) => v !== "1.0" && v !== "");
+  const defaultResults = useMemo(() => calcResults(fov, sens1x, "default", linearPower), [fov, sens1x, linearPower]);
   const hasCompare = comparePreset !== "none" && compareResults;
-  const compareName = hasCompare ? PRESETS.find((p) => p.id === comparePreset)?.name || "" : "";
+  const compareName = hasCompare ? PRESETS.find((p) => p.id === comparePreset)?.name || "" : "デフォルト";
   const mainName = PRESETS.find((p) => p.id === preset)?.name || "";
 
   // Chart
+  const activeCompareResults = hasCompare ? compareResults : defaultResults;
+
   const chartData = useMemo(() => results.map((r, i) => {
     const d = { name: r.name };
     d[mainName] = parseFloat(r.ratio.toFixed(3));
-    if (hasCompare) d[compareName] = parseFloat(compareResults[i].ratio.toFixed(3));
+    d[compareName] = parseFloat(activeCompareResults[i].ratio.toFixed(3));
     if (hasCurrent) d["現在の感度"] = parseFloat((currentParsed[r.name] / sens1x).toFixed(3));
     return d;
-  }), [results, compareResults, hasCurrent, currentParsed, sens1x, hasCompare, mainName, compareName]);
+  }), [results, activeCompareResults, hasCurrent, currentParsed, sens1x, mainName, compareName]);
 
   const chartMax = useMemo(() => {
     let mx = Math.max(...chartData.map((d) => d[mainName] || 0));
-    if (hasCompare) mx = Math.max(mx, ...chartData.map((d) => d[compareName] || 0));
+    mx = Math.max(mx, ...chartData.map((d) => d[compareName] || 0));
     if (hasCurrent) mx = Math.max(mx, ...chartData.map((d) => d["現在の感度"] || 0));
     return Math.max(2, Math.ceil(mx * 1.15));
   }, [chartData, hasCurrent, hasCompare, mainName, compareName]);
@@ -586,7 +588,7 @@ export default function ApexSensCalc() {
                   fontSize: 13, padding: "8px 12px", outline: "none", cursor: "pointer",
                 }}
               >
-                <option value="none">なし</option>
+                <option value="none">デフォルト（全1.0）</option>
                 {PRESETS.filter((p) => p.id !== preset).map((p) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
@@ -611,7 +613,7 @@ export default function ApexSensCalc() {
                 <th>比率</th>
                 <th>ゲーム内設定</th>
                 <th>cfg値</th>
-                {hasCompare && <th style={{ color: "#e8a83c" }}>{compareName}</th>}
+                <th style={{ color: "#e8a83c" }}>{compareName}</th>
                 {hasCurrent && <th style={{ color: "var(--apex-blue)" }}>現在値</th>}
               </tr>
             </thead>
@@ -623,7 +625,7 @@ export default function ApexSensCalc() {
                   <td>{r.ratio.toFixed(4)}</td>
                   <td className="hl-red">{r.scalar.toFixed(2)}</td>
                   <td style={{ fontSize: 12 }}>{r.scalar.toFixed(6)}</td>
-                  {hasCompare && <td style={{ color: "#e8a83c" }}>{compareResults[i].scalar.toFixed(2)}</td>}
+                  <td style={{ color: "#e8a83c" }}>{activeCompareResults[i].scalar.toFixed(2)}</td>
                   {hasCurrent && <td className="hl-blue">{currentParsed[r.name].toFixed(2)}</td>}
                 </tr>
               ))}
@@ -685,7 +687,7 @@ export default function ApexSensCalc() {
               <Bar dataKey={mainName} radius={[3, 3, 0, 0]}>
                 {chartData.map((_, i) => <Cell key={i} fill={i === 0 ? "#e8413c" : "#c43530"} />)}
               </Bar>
-              {hasCompare && <Bar dataKey={compareName} fill="#e8a83c" radius={[3, 3, 0, 0]} />}
+              <Bar dataKey={compareName} fill="#e8a83c" radius={[3, 3, 0, 0]} />
               {hasCurrent && <Bar dataKey="現在の感度" fill="#4a8fd4" radius={[3, 3, 0, 0]} />}
             </BarChart>
           </ResponsiveContainer>
@@ -693,11 +695,9 @@ export default function ApexSensCalc() {
             <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#e8413c" }} />{mainName}
             </span>
-            {hasCompare && (
-              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#e8a83c" }} />{compareName}
-              </span>
-            )}
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#e8a83c" }} />{compareName}
+            </span>
             {hasCurrent && (
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#4a8fd4" }} />現在の感度
