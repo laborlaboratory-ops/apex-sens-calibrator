@@ -36,12 +36,12 @@ function makeRatios(raw) {
 }
 
 const PRESET_DATA = {
-  lshun: { raw: { "1x": 1.536745, "2x": 1.239769, "3x": 1.444829, "4x": 1.684433, "6x": 1.482260, "8x": 1.711567, "10x": 1.913590 }, iron: 1.536745 },
-  aruta: { raw: { "1x": 3.0, "2x": 4.4, "3x": 4.7, "4x": 5.2, "6x": 6.6, "8x": 6.6, "10x": 6.8 }, iron: 6.8 },
-  satuki: { raw: { "1x": 2.65, "2x": 2.87, "3x": 2.87, "4x": 2.87, "6x": 3.4, "8x": 3.4, "10x": 3.5 }, iron: 2.65 },
-  curihara: { raw: { "1x": 1.0, "2x": 1.0, "3x": 1.1, "4x": 1.1, "6x": 1.1, "8x": 1.1, "10x": 1.1 }, iron: 1.0 },
-  lykq: { raw: { "1x": 2.7, "2x": 2.6, "3x": 2.6, "4x": 2.6, "6x": 4.0, "8x": 4.0, "10x": 4.0 }, iron: 2.7 },
-  kentoboss: { raw: { "1x": 4.33, "2x": 4.28, "3x": 4.45, "4x": 4.47, "6x": 4.1, "8x": 4.4, "10x": 4.6 }, iron: 4.33 },
+  lshun:     { fov: 104, raw: { "1x": 1.536745, "2x": 1.239769, "3x": 1.444829, "4x": 1.684433, "6x": 1.482260, "8x": 1.711567, "10x": 1.913590 }, iron: 1.536745 },
+  aruta:     { fov: 110, raw: { "1x": 3.0, "2x": 4.4, "3x": 4.7, "4x": 5.2, "6x": 6.6, "8x": 6.6, "10x": 6.8 }, iron: 6.8 },
+  satuki:    { fov: 104, raw: { "1x": 2.65, "2x": 2.87, "3x": 2.87, "4x": 2.87, "6x": 3.4, "8x": 3.4, "10x": 3.5 }, iron: 2.65 },
+  curihara:  { fov: 104, raw: { "1x": 1.0, "2x": 1.0, "3x": 1.1, "4x": 1.1, "6x": 1.1, "8x": 1.1, "10x": 1.1 }, iron: 1.0 },
+  lykq:      { fov: 104, raw: { "1x": 2.7, "2x": 2.6, "3x": 2.6, "4x": 2.6, "6x": 4.0, "8x": 4.0, "10x": 4.0 }, iron: 2.7 },
+  kentoboss: { fov: 106, raw: { "1x": 4.33, "2x": 4.28, "3x": 4.45, "4x": 4.47, "6x": 4.1, "8x": 4.4, "10x": 4.6 }, iron: 4.33 },
 };
 
 const PRESET_RATIOS = {};
@@ -86,14 +86,15 @@ IRON_RATIOS.unified = 1.0;
 IRON_RATIOS.default = 1.0;
 function fovToScale(fov) { return 1 + (fov - 70) * 0.01375; }
 
-const REF_FOV = 104;
-const hipFovRef = 70 * fovToScale(REF_FOV);
-const fov1xRef = SCOPES[0].fovMulti * hipFovRef;
-
 function calcResults(inGameFov, sens1x, presetId, power = 1.0) {
   const hipFov = 70 * fovToScale(inGameFov);
   const fov1x = SCOPES[0].fovMulti * hipFov;
   const zs1x = Math.tan((hipFov / 2) * DEG_TO_RAD) / Math.tan((fov1x / 2) * DEG_TO_RAD);
+
+  const presetFov = PRESET_DATA[presetId]?.fov ?? inGameFov;
+  const hipFovRef = 70 * fovToScale(presetFov);
+  const fov1xRef = SCOPES[0].fovMulti * hipFovRef;
+
   return SCOPES.map((scope) => {
     const scopeFov = scope.fovMulti * hipFov;
     const zs = Math.tan((hipFov / 2) * DEG_TO_RAD) / Math.tan((scopeFov / 2) * DEG_TO_RAD);
