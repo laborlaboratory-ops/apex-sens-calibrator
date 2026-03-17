@@ -518,7 +518,7 @@ export default function ApexSensCalc() {
           {PROFILES[preset] && (() => {
             const p = PROFILES[preset];
             return (
-              <div className="profile-cards">
+              <><div className="profile-cards">
                 <div className="profile-card">
                   {p.image
                     ? <img src={p.image} alt={preset} className="profile-avatar" />
@@ -542,7 +542,7 @@ export default function ApexSensCalc() {
                   </a>
                 ))}
               </div>
-              <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 8 }}>※ 商品リンクはアフィリエイトリンクです</div>
+              <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 8 }}>※ 商品リンクはアフィリエイトリンクです</div></>
             );
           })()}
           {preset === "unified" && (
