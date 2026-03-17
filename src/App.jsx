@@ -380,6 +380,14 @@ export default function ApexSensCalc() {
   const compareName = hasCompare ? PRESETS.find((p) => p.id === comparePreset)?.name || "" : "デフォルト";
   const mainName = PRESETS.find((p) => p.id === preset)?.name || "";
 
+  // プリセット生値（PROFILESに存在するプリセット選択時のみ）
+  const hasRaw = !!PRESET_DATA[preset];
+  const rawName = hasRaw ? `${mainName}（元値）` : "";
+  const rawData = useMemo(() => {
+    if (!hasRaw) return null;
+    return SCOPE_KEYS.map((k) => PRESET_DATA[preset].raw[k]);
+  }, [preset, hasRaw]);
+
   // Chart
   const activeCompareResults = hasCompare ? compareResults : defaultResults;
 
@@ -387,16 +395,18 @@ export default function ApexSensCalc() {
     const d = { name: r.name };
     d[mainName] = parseFloat(r.ratio.toFixed(3));
     d[compareName] = parseFloat(activeCompareResults[i].ratio.toFixed(3));
+    if (hasRaw) d[rawName] = parseFloat((rawData[i] / PRESET_DATA[preset].raw["1x"]).toFixed(3));
     if (hasCurrent) d["現在の感度"] = parseFloat((currentParsed[r.name] / sens1x).toFixed(3));
     return d;
-  }), [results, activeCompareResults, hasCurrent, currentParsed, sens1x, mainName, compareName]);
+  }), [results, activeCompareResults, hasRaw, rawData, hasCurrent, currentParsed, sens1x, mainName, compareName, rawName, preset]);
 
   const chartMax = useMemo(() => {
     let mx = Math.max(...chartData.map((d) => d[mainName] || 0));
     mx = Math.max(mx, ...chartData.map((d) => d[compareName] || 0));
+    if (hasRaw) mx = Math.max(mx, ...chartData.map((d) => d[rawName] || 0));
     if (hasCurrent) mx = Math.max(mx, ...chartData.map((d) => d["現在の感度"] || 0));
     return Math.max(2, Math.ceil(mx * 1.15));
-  }, [chartData, hasCurrent, hasCompare, mainName, compareName]);
+  }, [chartData, hasRaw, hasCurrent, mainName, compareName, rawName]);
 
   // Config
   const buildCfg = useCallback((type) => {
@@ -614,6 +624,7 @@ export default function ApexSensCalc() {
                 <th>ゲーム内設定</th>
                 <th>cfg値</th>
                 <th style={{ color: "#e8a83c" }}>{compareName}</th>
+                {hasRaw && <th style={{ color: "#a855f7" }}>{mainName}（元値）</th>}
                 {hasCurrent && <th style={{ color: "var(--apex-blue)" }}>現在値</th>}
               </tr>
             </thead>
@@ -626,6 +637,7 @@ export default function ApexSensCalc() {
                   <td className="hl-red">{r.scalar.toFixed(2)}</td>
                   <td style={{ fontSize: 12 }}>{r.scalar.toFixed(6)}</td>
                   <td style={{ color: "#e8a83c" }}>{activeCompareResults[i].scalar.toFixed(2)}</td>
+                  {hasRaw && <td style={{ color: "#a855f7" }}>{rawData[i].toFixed(2)}</td>}
                   {hasCurrent && <td className="hl-blue">{currentParsed[r.name].toFixed(2)}</td>}
                 </tr>
               ))}
@@ -688,6 +700,7 @@ export default function ApexSensCalc() {
                 {chartData.map((_, i) => <Cell key={i} fill={i === 0 ? "#e8413c" : "#c43530"} />)}
               </Bar>
               <Bar dataKey={compareName} fill="#e8a83c" radius={[3, 3, 0, 0]} />
+              {hasRaw && <Bar dataKey={rawName} fill="#a855f7" radius={[3, 3, 0, 0]} />}
               {hasCurrent && <Bar dataKey="現在の感度" fill="#4a8fd4" radius={[3, 3, 0, 0]} />}
             </BarChart>
           </ResponsiveContainer>
@@ -698,6 +711,11 @@ export default function ApexSensCalc() {
             <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#e8a83c" }} />{compareName}
             </span>
+            {hasRaw && (
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#a855f7" }} />{rawName}
+              </span>
+            )}
             {hasCurrent && (
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#4a8fd4" }} />現在の感度
