@@ -86,6 +86,10 @@ IRON_RATIOS.unified = 1.0;
 IRON_RATIOS.default = 1.0;
 function fovToScale(fov) { return 1 + (fov - 70) * 0.01375; }
 
+const REF_FOV = 104;
+const hipFovRef = 70 * fovToScale(REF_FOV);
+const fov1xRef = SCOPES[0].fovMulti * hipFovRef;
+
 function calcResults(inGameFov, sens1x, presetId, power = 1.0) {
   const hipFov = 70 * fovToScale(inGameFov);
   const fov1x = SCOPES[0].fovMulti * hipFov;
@@ -96,9 +100,15 @@ function calcResults(inGameFov, sens1x, presetId, power = 1.0) {
     const fullRatio = Math.tan((fov1x / 2) * DEG_TO_RAD) / Math.tan((scopeFov / 2) * DEG_TO_RAD);
     const zoomFrom1x = zs / zs1x;
     let ratio;
-    if (presetId === "unified") ratio = Math.pow(fullRatio, power);
-    else if (PRESET_RATIOS[presetId]) ratio = PRESET_RATIOS[presetId][scope.name];
-    else ratio = 1.0;
+    if (presetId === "unified") {
+      ratio = Math.pow(fullRatio, power);
+    } else if (PRESET_RATIOS[presetId]) {
+      const scopeFovRef = scope.fovMulti * hipFovRef;
+      const fullRatioRef = Math.tan((fov1xRef / 2) * DEG_TO_RAD) / Math.tan((scopeFovRef / 2) * DEG_TO_RAD);
+      ratio = PRESET_RATIOS[presetId][scope.name] * fullRatioRef / fullRatio;
+    } else {
+      ratio = 1.0;
+    }
     const scalar = sens1x * ratio;
     return { name: scope.name, label: scope.label, idx: scope.scalarIndex, scopeFov, zoomFrom1x, ratio, scalar };
   });
