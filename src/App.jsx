@@ -394,7 +394,7 @@ export default function ApexSensCalc() {
   const chartData = useMemo(() => results.map((r, i) => {
     const d = { name: r.name };
     d[mainName] = parseFloat(r.scalar.toFixed(3));
-    d[compareName] = parseFloat(activeCompareResults[i].ratio.toFixed(3));
+    if (hasCompare) d[compareName] = parseFloat(compareResults[i].scalar.toFixed(3));
     if (hasRaw) d[rawName] = parseFloat(rawData[i].toFixed(3));
     if (hasCurrent) d["現在の感度"] = parseFloat(currentParsed[r.name].toFixed(3));
     return d;
@@ -402,7 +402,7 @@ export default function ApexSensCalc() {
 
   const chartMax = useMemo(() => {
     let mx = Math.max(...chartData.map((d) => d[mainName] || 0));
-    mx = Math.max(mx, ...chartData.map((d) => d[compareName] || 0));
+    if (hasCompare) mx = Math.max(mx, ...chartData.map((d) => d[compareName] || 0));
     if (hasRaw) mx = Math.max(mx, ...chartData.map((d) => d[rawName] || 0));
     if (hasCurrent) mx = Math.max(mx, ...chartData.map((d) => d["現在の感度"] || 0));
     return Math.max(2, Math.ceil(mx * 1.15));
@@ -694,16 +694,18 @@ export default function ApexSensCalc() {
               <YAxis tick={{ fill: "#4a4a5e", fontSize: 11, fontFamily: "'Share Tech Mono', monospace" }}
                 axisLine={false} tickLine={false} domain={[0, chartMax]} tickFormatter={(v) => v.toFixed(1)} />
               <Tooltip content={<ChartTooltip />} />
-              <Bar dataKey={compareName} fill="#e8a83c" radius={[3, 3, 0, 0]} />
+              {hasCompare && <Bar dataKey={compareName} fill="#e8a83c" radius={[3, 3, 0, 0]} />}
               {hasRaw && <Bar dataKey={rawName} fill="#e8413c" radius={[3, 3, 0, 0]} />}
               <Bar dataKey={mainName} fill="#a855f7" radius={[3, 3, 0, 0]} />
               {hasCurrent && <Bar dataKey="現在の感度" fill="#4a8fd4" radius={[3, 3, 0, 0]} />}
             </BarChart>
           </ResponsiveContainer>
           <div style={{ display: "flex", gap: 16, marginTop: 8, fontSize: 11, color: "#4a4a5e", flexWrap: "wrap" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#e8a83c" }} />{compareName}
-            </span>
+            {hasCompare && (
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#e8a83c" }} />{compareName}
+              </span>
+            )}
             {hasRaw && (
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#e8413c" }} />{rawName}
