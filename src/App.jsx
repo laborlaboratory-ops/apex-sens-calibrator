@@ -528,6 +528,7 @@ export default function ApexSensCalc() {
                   </a>
                 ))}
               </div>
+              <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 8 }}>※ 商品リンクはアフィリエイトリンクです</div>
             );
           })()}
           {preset === "unified" && (
