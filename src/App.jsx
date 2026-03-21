@@ -244,17 +244,17 @@ style.textContent = `
   .alc-badge { font-size: 9px; font-weight: 700; font-family: 'Chakra Petch', sans-serif;
     color: var(--apex-red); background: rgba(232,65,60,0.1); border: 1px solid rgba(232,65,60,0.3);
     border-radius: 3px; padding: 1px 5px; margin-left: 4px; letter-spacing: 0.5px; vertical-align: middle; white-space: nowrap; }
-  .result-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .result-table { width: auto; border-collapse: collapse; font-size: 13px; }
   .result-table th {
     font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
     color: var(--text-dim); padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border);
   }
-  .result-table th:first-child { text-align: left; }
+  .result-table th:first-child { text-align: left; white-space: nowrap; }
   .result-table td {
     padding: 10px 10px; text-align: right; border-bottom: 1px solid rgba(26,26,46,0.5);
     font-family: 'Share Tech Mono', monospace; font-size: 14px; color: var(--text-secondary);
   }
-  .result-table td:first-child { text-align: left; font-family: 'Chakra Petch', sans-serif; font-weight: 600; color: var(--text-primary); }
+  .result-table td:first-child { text-align: left; font-family: 'Chakra Petch', sans-serif; font-weight: 600; color: var(--text-primary); width: 1%; white-space: nowrap; }
   .result-table tr:hover td { background: rgba(232,65,60,0.03); }
   .hl-red { color: var(--apex-red); font-weight: 500; }
   .hl-blue { color: var(--apex-blue); }
@@ -423,7 +423,7 @@ export default function ApexSensCalc() {
 
   // プリセット生値（PROFILESに存在するプリセット選択時のみ）
   const hasRaw = !!PRESET_DATA[preset];
-  const rawName = hasRaw ? `${mainName}（元値）` : "";
+  const rawName = hasRaw ? `${mainName}（使用感度）` : "";
   const rawData = useMemo(() => {
     if (!hasRaw) return null;
     return SCOPE_KEYS.map((k) => PRESET_DATA[preset].raw[k]);
@@ -479,80 +479,6 @@ export default function ApexSensCalc() {
         <div className="apex-header">
           <h1>APEX SENS CALIBRATOR</h1>
           <p>スコープ間感度統一ツール — 1倍を基準に全スコープの角速度を計算</p>
-        </div>
-
-        {/* ─── Input ─── */}
-        <div className="section-label">入力</div>
-        <div className="card">
-          <div className="input-row">
-            <div className="input-group">
-              <label>ゲーム内FOV設定</label>
-              <input type="number" inputMode="numeric" value={fovStr}
-                onChange={(e) => setFovStr(e.target.value)}
-                onBlur={() => { if (!fovStr || isNaN(parseFloat(fovStr))) setFovStr("104"); }}
-                style={fovWarn ? { borderColor: "#e8413c" } : {}} />
-              {fovWarn && <div style={{ color: "#e8413c", fontSize: 11, marginTop: 4 }}>⚠ {fovWarn}</div>}
-            </div>
-            <div className="input-group">
-              <label>1倍スコープ感度（scalar値）</label>
-              <input type="number" inputMode="decimal" step="any" value={sensStr}
-                onChange={(e) => setSensStr(e.target.value)}
-                onBlur={() => { if (!sensStr || isNaN(parseFloat(sensStr))) setSensStr("1.0"); }}
-                style={sensWarn ? { borderColor: "#e8413c" } : {}} />
-              {sensWarn && <div style={{ color: "#e8413c", fontSize: 11, marginTop: 4 }}>⚠ {sensWarn}</div>}
-            </div>
-          </div>
-          {PRESET_DATA[preset]?.raw && (() => {
-            const pd = PRESET_DATA[preset];
-            const name = PRESETS.find(p => p.id === preset)?.name;
-            const hasFov = pd.fov != null;
-            return (
-              <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>{name} から入力:</span>
-                {hasFov && <button className="preset-fill-btn" onClick={() => setFovStr(String(pd.fov))}>FOV {pd.fov}</button>}
-                <button className="preset-fill-btn" onClick={() => setSensStr(String(pd.raw["1x"]))}>1x: {pd.raw["1x"]}</button>
-                {hasFov && <button className="preset-fill-btn preset-fill-btn-both" onClick={() => { setFovStr(String(pd.fov)); setSensStr(String(pd.raw["1x"])); }}>両方を入力</button>}
-              </div>
-            );
-          })()}
-          <div className="fov-info">
-            <span>cl_fovScale: {fovToScale(fov).toFixed(6)}</span>
-            <span>実FOV(4:3): {hipFov.toFixed(1)}°</span>
-          </div>
-
-          {/* Current Sensitivity */}
-          <div style={{ marginTop: 16, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
-            <button className="toggle-btn" onClick={() => setShowCurrent(!showCurrent)}>
-              {showCurrent ? "▾" : "▸"} 現在の感度を入力して比較する
-            </button>
-            {showCurrent && (
-              <div className="current-panel">
-                <div style={{ fontSize: 11, color: "var(--apex-blue)", marginBottom: 10, fontWeight: 600 }}>
-                  現在のスコープ別scalar値を入力（グラフ・テーブルで比較表示されます）
-                </div>
-                <div className="current-grid">
-                  {SCOPE_KEYS.map((k) => (
-                    <div className="input-group" key={k}>
-                      <label style={{ color: "var(--apex-blue)" }}>{k}</label>
-                      <input type="number" inputMode="decimal" step="any"
-                        value={currentSens[k]}
-                        onChange={(e) => setCurrentSens((p) => ({ ...p, [k]: e.target.value }))}
-                        onBlur={() => { if (!currentSens[k] || isNaN(parseFloat(currentSens[k]))) setCurrentSens((p) => ({ ...p, [k]: "1.0" })); }}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="save-row">
-                  <button className="btn" onClick={handleSave}>💾 設定を保存</button>
-                  <button className="btn" onClick={() => setCurrentSens({ ...DEFAULT_CURRENT })}>リセット</button>
-                  {saveMsg && <span className="save-msg" key={Date.now()}>{saveMsg}</span>}
-                </div>
-                <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 8 }}>
-                  保存すると次回アクセス時に自動で読み込まれます
-                </div>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* ─── Presets ─── */}
@@ -669,13 +595,82 @@ export default function ApexSensCalc() {
           </div>
         </div>
 
+        {/* ─── Input ─── */}
+        <div className="section-label">入力</div>
+        <div className="card">
+          <div className="input-row">
+            <div className="input-group">
+              <label>ゲーム内視野角設定</label>
+              <input type="number" inputMode="numeric" value={fovStr}
+                onChange={(e) => setFovStr(e.target.value)}
+                onBlur={() => { if (!fovStr || isNaN(parseFloat(fovStr))) setFovStr("104"); }}
+                style={fovWarn ? { borderColor: "#e8413c" } : {}} />
+              {fovWarn && <div style={{ color: "#e8413c", fontSize: 11, marginTop: 4 }}>⚠ {fovWarn}</div>}
+            </div>
+            <div className="input-group">
+              <label>1倍スコープ感度（scalar値）</label>
+              <input type="number" inputMode="decimal" step="any" value={sensStr}
+                onChange={(e) => setSensStr(e.target.value)}
+                onBlur={() => { if (!sensStr || isNaN(parseFloat(sensStr))) setSensStr("1.0"); }}
+                style={sensWarn ? { borderColor: "#e8413c" } : {}} />
+              {sensWarn && <div style={{ color: "#e8413c", fontSize: 11, marginTop: 4 }}>⚠ {sensWarn}</div>}
+            </div>
+          </div>
+          {PRESET_DATA[preset]?.raw && (() => {
+            const pd = PRESET_DATA[preset];
+            const name = PRESETS.find(p => p.id === preset)?.name;
+            const hasFov = pd.fov != null;
+            return (
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>{name} から入力:</span>
+                {hasFov && <button className="preset-fill-btn" onClick={() => setFovStr(String(pd.fov))}>FOV {pd.fov}</button>}
+                <button className="preset-fill-btn" onClick={() => setSensStr(String(pd.raw["1x"]))}>1x: {pd.raw["1x"]}</button>
+                {hasFov && <button className="preset-fill-btn preset-fill-btn-both" onClick={() => { setFovStr(String(pd.fov)); setSensStr(String(pd.raw["1x"])); }}>両方を入力</button>}
+              </div>
+            );
+          })()}
+
+          {/* Current Sensitivity */}
+          <div style={{ marginTop: 16, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
+            <button className="toggle-btn" onClick={() => setShowCurrent(!showCurrent)}>
+              {showCurrent ? "▾" : "▸"} 現在の感度を入力して比較する
+            </button>
+            {showCurrent && (
+              <div className="current-panel">
+                <div style={{ fontSize: 11, color: "var(--apex-blue)", marginBottom: 10, fontWeight: 600 }}>
+                  現在のスコープ別scalar値を入力（グラフ・テーブルで比較表示されます）
+                </div>
+                <div className="current-grid">
+                  {SCOPE_KEYS.map((k) => (
+                    <div className="input-group" key={k}>
+                      <label style={{ color: "var(--apex-blue)" }}>{k}</label>
+                      <input type="number" inputMode="decimal" step="any"
+                        value={currentSens[k]}
+                        onChange={(e) => setCurrentSens((p) => ({ ...p, [k]: e.target.value }))}
+                        onBlur={() => { if (!currentSens[k] || isNaN(parseFloat(currentSens[k]))) setCurrentSens((p) => ({ ...p, [k]: "1.0" })); }}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="save-row">
+                  <button className="btn" onClick={handleSave}>💾 設定を保存</button>
+                  <button className="btn" onClick={() => setCurrentSens({ ...DEFAULT_CURRENT })}>リセット</button>
+                  {saveMsg && <span className="save-msg" key={Date.now()}>{saveMsg}</span>}
+                </div>
+                <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 8 }}>
+                  保存すると次回アクセス時に自動で読み込まれます
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* ─── Results ─── */}
         <div className="section-label">算出結果</div>
         <div className="card" style={{ overflowX: "auto" }}>
           {(() => {
             const alc = PRESET_DATA[preset]?.alc;
             if (!alc) return null;
-            const hasOverrides = Object.keys(alc.overrides || {}).length > 0;
             return (
               <div className="alc-base-info">
                 ベース設定: <strong>{alc.base} リニア</strong>
@@ -686,11 +681,8 @@ export default function ApexSensCalc() {
             <thead>
               <tr>
                 <th>スコープ</th>
-                <th>1x基準倍率</th>
-                <th>比率</th>
-                {hasRaw && <th style={{ color: "#e8413c" }}>{mainName}（元値）</th>}
+                {hasRaw && <th style={{ color: "#e8413c" }}>{mainName}（使用感度）</th>}
                 <th style={{ color: "#a855f7" }}>生成感度</th>
-                <th>cfg値</th>
                 {hasCurrent && <th style={{ color: "var(--apex-blue)" }}>現在値</th>}
               </tr>
             </thead>
@@ -700,11 +692,8 @@ export default function ApexSensCalc() {
                 return (
                 <tr key={r.name}>
                   <td>{r.name}{alcOverride && <span className="alc-badge">{alcOverride}</span>}</td>
-                  <td>{r.zoomFrom1x.toFixed(2)}x</td>
-                  <td>{r.ratio.toFixed(4)}</td>
                   {hasRaw && <td style={{ color: "#e8413c" }}>{rawData[i].toFixed(2)}</td>}
                   <td style={{ color: "#a855f7", fontWeight: 500 }}>{r.scalar.toFixed(2)}</td>
-                  <td style={{ fontSize: 12 }}>{r.scalar.toFixed(6)}</td>
                   {hasCurrent && <td className="hl-blue">{currentParsed[r.name].toFixed(2)}</td>}
                 </tr>
                 );
