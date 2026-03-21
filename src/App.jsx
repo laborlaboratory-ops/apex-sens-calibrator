@@ -190,6 +190,26 @@ style.textContent = `
     color: var(--apex-red); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
   }
   .section-label::before { content: ''; width: 12px; height: 2px; background: var(--apex-red); }
+  .section-label-toggle {
+    cursor: pointer; user-select: none; background: none; border: none; padding: 0;
+    font-family: 'Chakra Petch', sans-serif; width: 100%;
+  }
+  .section-label-toggle:hover .section-label { opacity: 0.8; }
+  .section-label-toggle .section-label::before { display: none; }
+  .preset-fill-btn {
+    font-family: 'Chakra Petch', sans-serif; font-size: 12px; font-weight: 600;
+    padding: 6px 14px; border-radius: 4px; cursor: pointer; transition: all 0.2s;
+    background: var(--bg-input); border: 1px solid var(--border); color: var(--text-secondary);
+  }
+  .preset-fill-btn:hover { border-color: var(--apex-red); color: var(--apex-red); }
+  .preset-fill-btn-both { border-color: rgba(232,65,60,0.3); color: var(--apex-red); }
+  .preset-fill-btn-both:hover { background: rgba(232,65,60,0.1); }
+  .toggle-icon { display: inline-block; width: 12px; height: 2px; background: var(--apex-red); position: relative; flex-shrink: 0; }
+  .toggle-icon.closed::after { content: ''; position: absolute; width: 2px; height: 12px; background: var(--apex-red); left: 5px; top: 50%; transform: translateY(-50%); }
+  .section-label-selected {
+    font-size: 11px; font-weight: 600; color: var(--text-secondary);
+    letter-spacing: 1px; text-transform: none; margin-left: 4px;
+  }
   .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 20px; }
   .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
   @media (max-width: 600px) { .input-row { grid-template-columns: 1fr; } }
@@ -352,6 +372,7 @@ export default function ApexSensCalc() {
   const [linearPower, setLinearPower] = useState(0.2);
   const [comparePreset, setComparePreset] = useState("none");
   const [tagFilter, setTagFilter] = useState("すべて");
+  const [showPresets, setShowPresets] = useState(true);
 
   // Load saved data
   useEffect(() => {
@@ -483,6 +504,19 @@ export default function ApexSensCalc() {
               {sensWarn && <div style={{ color: "#e8413c", fontSize: 11, marginTop: 4 }}>⚠ {sensWarn}</div>}
             </div>
           </div>
+          {PRESET_DATA[preset]?.raw && (() => {
+            const pd = PRESET_DATA[preset];
+            const name = PRESETS.find(p => p.id === preset)?.name;
+            const hasFov = pd.fov != null;
+            return (
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>{name} から入力:</span>
+                {hasFov && <button className="preset-fill-btn" onClick={() => setFovStr(String(pd.fov))}>FOV {pd.fov}</button>}
+                <button className="preset-fill-btn" onClick={() => setSensStr(String(pd.raw["1x"]))}>1x: {pd.raw["1x"]}</button>
+                {hasFov && <button className="preset-fill-btn preset-fill-btn-both" onClick={() => { setFovStr(String(pd.fov)); setSensStr(String(pd.raw["1x"])); }}>両方を入力</button>}
+              </div>
+            );
+          })()}
           <div className="fov-info">
             <span>cl_fovScale: {fovToScale(fov).toFixed(6)}</span>
             <span>実FOV(4:3): {hipFov.toFixed(1)}°</span>
@@ -524,8 +558,14 @@ export default function ApexSensCalc() {
         </div>
 
         {/* ─── Presets ─── */}
-        <div className="section-label">プリセット</div>
-        <div className="card">
+        <button className="section-label-toggle" onClick={() => setShowPresets(!showPresets)}>
+          <div className="section-label">
+            <span className={`toggle-icon${showPresets ? "" : " closed"}`} />
+            プリセット
+            {!showPresets && <span className="section-label-selected">— {PRESETS.find(p => p.id === preset)?.name}</span>}
+          </div>
+        </button>
+        <div className="card" style={{ display: showPresets ? "" : "none" }}>
           <div className="filter-row">
             {["すべて", "配信者", "プロ"].map((tag) => (
               <button key={tag} className={`filter-btn${tagFilter === tag ? " active" : ""}`} onClick={() => setTagFilter(tag)}>{tag}</button>
