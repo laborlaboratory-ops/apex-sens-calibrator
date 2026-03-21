@@ -6,7 +6,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 // ─── Constants ───────────────────────────────────────────────
 const DEG_TO_RAD = Math.PI / 180;
 const BASE_TAN_35 = Math.tan(35 * DEG_TO_RAD);
-const YAW = 0.022;
 const SCOPE_KEYS = ["1x","2x","3x","4x","6x","8x","10x"];
 const DEFAULT_CURRENT = { "1x":"1.0","2x":"1.0","3x":"1.0","4x":"1.0","6x":"1.0","8x":"1.0","10x":"1.0" };
 
@@ -119,11 +118,6 @@ function calcResults(inGameFov, sens1x, presetId, power = 1.0) {
   });
 }
 
-function calcCm360(dpi, baseSens, scalar, zoomScalar) {
-  const eSens = baseSens * scalar / zoomScalar;
-  return (360 / (dpi * eSens * YAW)) * 2.54;
-}
-
 // ─── Validation ──────────────────────────────────────────────
 function getWarning(field, value) {
   const num = parseFloat(value);
@@ -153,10 +147,6 @@ const STORAGE_KEY = "apex-sens-data";
 async function loadSaved() {
   try { const v = localStorage.getItem(STORAGE_KEY); return v ? JSON.parse(v) : null; }
   catch { return null; }
-}
-async function saveCurrent(data) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); return true; }
-  catch { return false; }
 }
 
 // ─── Styles ──────────────────────────────────────────────────
@@ -370,12 +360,8 @@ export default function ApexSensCalc() {
   const [preset, setPreset] = useState("unified");
   const [cfgTab, setCfgTab] = useState("pad");
   const [copied, setCopied] = useState(false);
-  const [showMouse, setShowMouse] = useState(false);
-  const [dpiStr, setDpiStr] = useState("800");
-  const [baseSensStr, setBaseSensStr] = useState("2.0");
   const [showCurrent, setShowCurrent] = useState(false);
   const [currentSens, setCurrentSens] = useState({ ...DEFAULT_CURRENT });
-  const [saveMsg, setSaveMsg] = useState("");
   const [linearPower, setLinearPower] = useState(0.2);
   const [comparePreset, setComparePreset] = useState("none");
   const [tagFilter, setTagFilter] = useState("すべて");
@@ -397,17 +383,11 @@ export default function ApexSensCalc() {
   // Parse numbers
   const fov = (() => { const n = parseFloat(fovStr); return isNaN(n) ? 104 : Math.max(70, Math.min(120, n)); })();
   const sens1x = (() => { const n = parseFloat(sensStr); return isNaN(n) ? 1.0 : Math.max(0.01, n); })();
-  const dpi = (() => { const n = parseFloat(dpiStr); return isNaN(n) ? 800 : Math.max(100, n); })();
-  const baseSens = (() => { const n = parseFloat(baseSensStr); return isNaN(n) ? 2.0 : Math.max(0.1, n); })();
-
   const fovWarn = getWarning("fov", fovStr);
   const sensWarn = getWarning("sens", sensStr);
-  const dpiWarn = getWarning("dpi", dpiStr);
-  const baseSensWarn = getWarning("baseSens", baseSensStr);
 
   const results = useMemo(() => calcResults(fov, sens1x, preset, linearPower), [fov, sens1x, preset, linearPower]);
   const compareResults = useMemo(() => comparePreset !== "none" ? calcResults(fov, sens1x, comparePreset, linearPower) : null, [fov, sens1x, comparePreset, linearPower]);
-  const hipFov = 70 * fovToScale(fov);
 
   const currentParsed = useMemo(() => {
     const out = {};
@@ -466,11 +446,6 @@ export default function ApexSensCalc() {
     setCopied(true); setTimeout(() => setCopied(false), 2000);
   }, [buildCfg, cfgTab]);
 
-  const handleSave = useCallback(async () => {
-    const ok = await saveCurrent({ current: currentSens, fov: fovStr, sens: sensStr, linearPower });
-    setSaveMsg(ok ? "✓ 保存しました" : "保存に失敗しました");
-    setTimeout(() => setSaveMsg(""), 2500);
-  }, [currentSens, fovStr, sensStr, linearPower]);
 
 
   return (
@@ -569,30 +544,6 @@ export default function ApexSensCalc() {
               </div>
             </div>
           )}
-          <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--border)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", whiteSpace: "nowrap" }}>比較対象</span>
-              <select
-                value={comparePreset}
-                onChange={(e) => setComparePreset(e.target.value)}
-                style={{
-                  flex: 1, background: "var(--bg-input)", border: "1px solid var(--border)",
-                  borderRadius: 6, color: "var(--text-primary)", fontFamily: "'Chakra Petch', sans-serif",
-                  fontSize: 13, padding: "8px 12px", outline: "none", cursor: "pointer",
-                }}
-              >
-                <option value="none">デフォルト（全1.0）</option>
-                {PRESETS.filter((p) => p.id !== preset).map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-            </div>
-            {hasCompare && (
-              <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 6 }}>
-                グラフとテーブルに「{compareName}」を追加表示します
-              </div>
-            )}
-          </div>
         </div>
 
         {/* ─── Input ─── */}
@@ -623,46 +574,13 @@ export default function ApexSensCalc() {
             return (
               <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <span style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>{name} から入力:</span>
-                {hasFov && <button className="preset-fill-btn" onClick={() => setFovStr(String(pd.fov))}>FOV {pd.fov}</button>}
+                {hasFov && <button className="preset-fill-btn" onClick={() => setFovStr(String(pd.fov))}>視野角 {pd.fov}</button>}
                 <button className="preset-fill-btn" onClick={() => setSensStr(String(pd.raw["1x"]))}>1x: {pd.raw["1x"]}</button>
                 {hasFov && <button className="preset-fill-btn preset-fill-btn-both" onClick={() => { setFovStr(String(pd.fov)); setSensStr(String(pd.raw["1x"])); }}>両方を入力</button>}
               </div>
             );
           })()}
 
-          {/* Current Sensitivity */}
-          <div style={{ marginTop: 16, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
-            <button className="toggle-btn" onClick={() => setShowCurrent(!showCurrent)}>
-              {showCurrent ? "▾" : "▸"} 現在の感度を入力して比較する
-            </button>
-            {showCurrent && (
-              <div className="current-panel">
-                <div style={{ fontSize: 11, color: "var(--apex-blue)", marginBottom: 10, fontWeight: 600 }}>
-                  現在のスコープ別scalar値を入力（グラフ・テーブルで比較表示されます）
-                </div>
-                <div className="current-grid">
-                  {SCOPE_KEYS.map((k) => (
-                    <div className="input-group" key={k}>
-                      <label style={{ color: "var(--apex-blue)" }}>{k}</label>
-                      <input type="number" inputMode="decimal" step="any"
-                        value={currentSens[k]}
-                        onChange={(e) => setCurrentSens((p) => ({ ...p, [k]: e.target.value }))}
-                        onBlur={() => { if (!currentSens[k] || isNaN(parseFloat(currentSens[k]))) setCurrentSens((p) => ({ ...p, [k]: "1.0" })); }}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="save-row">
-                  <button className="btn" onClick={handleSave}>💾 設定を保存</button>
-                  <button className="btn" onClick={() => setCurrentSens({ ...DEFAULT_CURRENT })}>リセット</button>
-                  {saveMsg && <span className="save-msg" key={Date.now()}>{saveMsg}</span>}
-                </div>
-                <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 8 }}>
-                  保存すると次回アクセス時に自動で読み込まれます
-                </div>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* ─── Results ─── */}
@@ -701,42 +619,6 @@ export default function ApexSensCalc() {
             </tbody>
           </table>
 
-          <div className="mouse-extra">
-            <button className="toggle-btn" onClick={() => setShowMouse(!showMouse)}>
-              {showMouse ? "▾" : "▸"} マウス用 cm/360 を表示
-            </button>
-            {showMouse && (
-              <div style={{ marginTop: 12 }}>
-                <div className="input-row" style={{ marginBottom: 12 }}>
-                  <div className="input-group">
-                    <label>マウスDPI</label>
-                    <input type="number" inputMode="numeric" value={dpiStr}
-                      onChange={(e) => setDpiStr(e.target.value)}
-                      onBlur={() => { if (!dpiStr || isNaN(parseFloat(dpiStr))) setDpiStr("800"); }}
-                      style={dpiWarn ? { borderColor: "#e8413c" } : {}} />
-                    {dpiWarn && <div style={{ color: "#e8413c", fontSize: 11, marginTop: 4 }}>⚠ {dpiWarn}</div>}
-                  </div>
-                  <div className="input-group">
-                    <label>ゲーム内ベース感度</label>
-                    <input type="number" inputMode="decimal" step="any" value={baseSensStr}
-                      onChange={(e) => setBaseSensStr(e.target.value)}
-                      onBlur={() => { if (!baseSensStr || isNaN(parseFloat(baseSensStr))) setBaseSensStr("2.0"); }}
-                      style={baseSensWarn ? { borderColor: "#e8413c" } : {}} />
-                    {baseSensWarn && <div style={{ color: "#e8413c", fontSize: 11, marginTop: 4 }}>⚠ {baseSensWarn}</div>}
-                  </div>
-                </div>
-                <table className="result-table">
-                  <thead><tr><th>スコープ</th><th>cm/360</th></tr></thead>
-                  <tbody>
-                    {results.map((r) => {
-                      const zs = Math.tan((hipFov / 2) * DEG_TO_RAD) / Math.tan((r.scopeFov / 2) * DEG_TO_RAD);
-                      return <tr key={r.name}><td>{r.name}</td><td>{calcCm360(dpi, baseSens, r.scalar, zs).toFixed(2)}</td></tr>;
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* ─── Chart ─── */}
@@ -782,7 +664,7 @@ export default function ApexSensCalc() {
         </div>
 
         {/* ─── Config Output ─── */}
-        <div className="section-label">コンフィグ出力</div>
+        <div className="section-label">コンフィグ出力（上級者設定）</div>
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
           <div className="cfg-tabs" style={{ padding: "12px 16px 0" }}>
             <button className={`cfg-tab${cfgTab === "pad" ? " active" : ""}`} onClick={() => { setCfgTab("pad"); setCopied(false); }}>PAD用</button>
