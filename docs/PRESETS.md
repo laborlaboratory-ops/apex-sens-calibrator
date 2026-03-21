@@ -38,7 +38,7 @@
 - **ID**: `lshun`
 - **ベース設定**: 4-3クラシック / デッドゾーンなし / FOV 104
 - **データソース**: 本人のcfgスクリーンショット + X(@shunshun_Games)
-- **ソースURL**: https://x.com/shunshun_Games/status/1876723419829731487
+- **ソースURL**:https://www.youtube.com/watch?v=tNCzS0h0YFY&t=1677s
 
 ---
 
@@ -55,6 +55,12 @@
 - **ベース設定**: 4-3リニア / デッドゾーンなし / FOV 104
 - **データソース**: b-gamers.net（2026年3月9日更新）
 - **ソースURL**: https://b-gamers.net/apex-curihara/
+
+---
+
+### kentoboss（配信者）
+- **ID**: `kentoboss`
+- **ベース設定**: 4-1リニア / FOV 106
 
 ---
 

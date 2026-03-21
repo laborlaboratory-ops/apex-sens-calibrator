@@ -55,7 +55,7 @@ const PRESETS = [
   // { id: "curihara",  name: "Curihara",          tag: "プロ",   curve: "4-3 リニア" },
   { id: "aruta",     name: "あるた",            tag: "配信者", curve: null },
   { id: "lshun",     name: "Lスターしゅんしゅん", tag: "配信者", curve: "4-3 クラシック" },
-  { id: "kentoboss", name: "kentoboss",         tag: "配信者", curve: "リニア" },
+  { id: "kentoboss", name: "kentoboss",         tag: "配信者", curve: "4-1 リニア" },
 ];
 
 // ─── Profiles ────────────────────────────────────────────────
