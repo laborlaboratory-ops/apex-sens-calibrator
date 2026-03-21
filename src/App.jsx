@@ -465,15 +465,6 @@ export default function ApexSensCalc() {
     setTimeout(() => setSaveMsg(""), 2500);
   }, [currentSens, fovStr, sensStr, linearPower]);
 
-  const handleDownload = useCallback(() => {
-    const blob = new Blob([buildCfg(cfgTab)], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = cfgTab === "pad" ? "apex_pad_sensitivity.cfg" : "apex_mouse_sensitivity.cfg";
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, [buildCfg, cfgTab]);
 
   return (
     <div className="apex-app">
@@ -801,9 +792,6 @@ export default function ApexSensCalc() {
                 return <div key={i}><span className="key">{key}</span> <span className="val">{rest.join(" ")}</span></div>;
               })}
             </div>
-            <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-              <button className="btn" onClick={handleDownload}>📥 cfgファイルをダウンロード</button>
-            </div>
           </div>
           <div style={{ padding: "0 16px 16px" }}>
             <div className="warning-box">
@@ -811,7 +799,7 @@ export default function ApexSensCalc() {
               <div>
                 <strong>profile.cfg を読み取り専用に設定してください。</strong><br />
                 設定しないとゲーム起動時に値が上書きされます。ファイル右クリック → プロパティ → 読み取り専用にチェック。<br />
-                <span style={{ color: "var(--text-dim)", fontSize: 10 }}>パス: %USERPROFILE%\Saved Games\Respawn\Apex\profile\profile.cfg</span>
+                <span style={{ color: "#9090aa", fontSize: 11, fontFamily: "'Share Tech Mono', monospace" }}>%USERPROFILE%\Saved Games\Respawn\Apex\profile\profile.cfg</span>
               </div>
             </div>
           </div>
