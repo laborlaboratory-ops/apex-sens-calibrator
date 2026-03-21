@@ -212,7 +212,7 @@ style.textContent = `
     font-size: 11px; font-weight: 600; color: var(--text-secondary);
     letter-spacing: 1px; text-transform: none; margin-left: 4px;
   }
-  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 20px; }
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 20px; }
   .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
   @media (max-width: 600px) { .input-row { grid-template-columns: 1fr; } }
   .input-group label { display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
@@ -239,11 +239,11 @@ style.textContent = `
   .preset-tag[data-tag="参考"] { color: var(--text-dim); }
   .preset-name { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
   .info-badges { display: flex; align-items: center; gap: 4px; margin-top: 5px; font-size: 10px; color: #9090aa; }
-  .alc-base-info { padding: 10px 16px 6px; font-size: 11px; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+  .alc-base-info { padding: 0px 10px 0px; font-size: 13px; color: var(--text-secondary); }
   .alc-base-info strong { color: var(--text-primary); }
   .alc-badge { font-size: 9px; font-weight: 700; font-family: 'Chakra Petch', sans-serif;
     color: var(--apex-red); background: rgba(232,65,60,0.1); border: 1px solid rgba(232,65,60,0.3);
-    border-radius: 3px; padding: 1px 5px; margin-left: 7px; vertical-align: middle; letter-spacing: 0.5px; }
+    border-radius: 3px; padding: 1px 5px; margin-left: 4px; letter-spacing: 0.5px; vertical-align: middle; white-space: nowrap; }
   .result-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   .result-table th {
     font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
@@ -679,9 +679,6 @@ export default function ApexSensCalc() {
             return (
               <div className="alc-base-info">
                 ベース設定: <strong>{alc.base} リニア</strong>
-                {hasOverrides && <span style={{ color: "var(--text-dim)", marginLeft: 10 }}>
-                  ／ 一部スコープは異なる設定
-                </span>}
               </div>
             );
           })()}
