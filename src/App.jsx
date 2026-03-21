@@ -50,11 +50,13 @@ Object.keys(PRESET_DATA).forEach((id) => { PRESET_RATIOS[id] = makeRatios(PRESET
 const PRESETS = [
   { id: "unified",   name: "リニア",            tag: "計算",   curve: null },
   { id: "aruta",     name: "あるた",            tag: "配信者", curve: null },
-  { id: "satuki",    name: "satuki",            tag: "プロ",   curve: "4-1 リニア" },
-  { id: "lykq",      name: "Lykq",              tag: "プロ",   curve: "4-1 リニア" },
+  // 許諾未取得のため非表示（データはPRESET_DATAに保持）
+  // { id: "satuki",    name: "satuki",            tag: "プロ",   curve: "4-1 リニア" },
+  { id: "lykq",      name: "Pro Player",        tag: "プロ",   curve: "4-1 リニア" }, // 許諾取得後に本名へ変更
   { id: "lshun",     name: "Lスターしゅんしゅん", tag: "配信者", curve: "4-3 クラシック" },
   { id: "kentoboss", name: "kentoboss",         tag: "配信者", curve: "リニア" },
-  { id: "curihara",  name: "Curihara",          tag: "プロ",   curve: "4-3 リニア" },
+  // 許諾未取得のため非表示（データはPRESET_DATAに保持）
+  // { id: "curihara",  name: "Curihara",          tag: "プロ",   curve: "4-3 リニア" },
 ];
 
 // ─── Profiles ────────────────────────────────────────────────
