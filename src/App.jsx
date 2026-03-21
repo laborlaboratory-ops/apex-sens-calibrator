@@ -48,13 +48,13 @@ const PRESET_RATIOS = {};
 Object.keys(PRESET_DATA).forEach((id) => { PRESET_RATIOS[id] = makeRatios(PRESET_DATA[id].raw); });
 
 const PRESETS = [
-  { id: "unified", name: "リニア", desc: "1倍基準で感度補正 — PAD↔マウスの強度調整可能", tag: "計算" },
-  { id: "aruta", name: "あるた", desc: "1x〜4xフラット型 — 高感度バランス", tag: "配信者" },
-  { id: "satuki", name: "satuki", desc: "ZETA — 1x〜4x統一＋6x以上ジャンプ型", tag: "プロ" },
-  { id: "lykq", name: "Lykq", desc: "4-1リニア — 中距離統一＋遠距離別枠型", tag: "プロ" },
-  { id: "lshun", name: "Lスターしゅんしゅん", desc: "4-4クラシック — cfg精密調整型", tag: "配信者" },
-  { id: "kentoboss", name: "kentoboss", desc: "4.3フラット — リニア入力・デッドゾーン無し", tag: "配信者" },
-  { id: "curihara", name: "Curihara", desc: "4-3リニア — 微調整ミニマル型", tag: "プロ" },
+  { id: "unified",   name: "リニア",            tag: "計算",   curve: null },
+  { id: "aruta",     name: "あるた",            tag: "配信者", curve: null },
+  { id: "satuki",    name: "satuki",            tag: "プロ",   curve: "4-1 リニア" },
+  { id: "lykq",      name: "Lykq",              tag: "プロ",   curve: "4-1 リニア" },
+  { id: "lshun",     name: "Lスターしゅんしゅん", tag: "配信者", curve: "4-4 クラシック" },
+  { id: "kentoboss", name: "kentoboss",         tag: "配信者", curve: "リニア" },
+  { id: "curihara",  name: "Curihara",          tag: "プロ",   curve: "4-3 リニア" },
 ];
 
 // ─── Profiles ────────────────────────────────────────────────
@@ -93,7 +93,6 @@ function calcResults(inGameFov, sens1x, presetId, power = 1.0) {
 
   const presetFov = PRESET_DATA[presetId]?.fov ?? inGameFov;
   const hipFovRef = 70 * fovToScale(presetFov);
-  const fov1xRef = SCOPES[0].fovMulti * hipFovRef;
 
   return SCOPES.map((scope) => {
     const scopeFov = scope.fovMulti * hipFov;
@@ -104,9 +103,12 @@ function calcResults(inGameFov, sens1x, presetId, power = 1.0) {
     if (presetId === "unified") {
       ratio = Math.pow(fullRatio, power);
     } else if (PRESET_RATIOS[presetId]) {
+      // 全スコープ統一式: PRESET_RATIOS[scope] × (zs_user / zs_preset)
+      // これにより角速度が保存され、FOV変更時に同じ感覚でプレイできる
+      // 1xを含む全スコープで同じロジック（1xはPRESET_RATIOS=1.0なのでzs比のみ）
       const scopeFovRef = scope.fovMulti * hipFovRef;
-      const fullRatioRef = Math.tan((fov1xRef / 2) * DEG_TO_RAD) / Math.tan((scopeFovRef / 2) * DEG_TO_RAD);
-      ratio = PRESET_RATIOS[presetId][scope.name] * fullRatioRef / fullRatio;
+      const zsRef = Math.tan((hipFovRef / 2) * DEG_TO_RAD) / Math.tan((scopeFovRef / 2) * DEG_TO_RAD);
+      ratio = PRESET_RATIOS[presetId][scope.name] * zs / zsRef;
     } else {
       ratio = 1.0;
     }
@@ -213,8 +215,8 @@ style.textContent = `
   .preset-tag[data-tag="配信者"] { color: #e8a83c; }
   .preset-tag[data-tag="研究者"] { color: var(--apex-blue); }
   .preset-tag[data-tag="参考"] { color: var(--text-dim); }
-  .preset-name { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
-  .preset-desc { font-size: 10px; color: var(--text-dim); line-height: 1.3; }
+  .preset-name { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+  .info-badges { display: flex; align-items: center; gap: 4px; margin-top: 5px; font-size: 10px; color: #9090aa; }
   .result-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   .result-table th {
     font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
@@ -424,7 +426,7 @@ export default function ApexSensCalc() {
     const pfx = type === "pad" ? "gamepad_ads_advanced_sensitivity_scalar" : "mouse_zoomed_sensitivity_scalar";
     let lines = results.map((r) => `${pfx}_${r.idx} "${r.scalar.toFixed(6)}"`);
     if (type === "pad") {
-      const ironScalar = sens1x * (IRON_RATIOS[preset] || 1.0);
+      const ironScalar = results[0].scalar * (IRON_RATIOS[preset] || 1.0);
       lines.push(`${pfx}_7 "${ironScalar.toFixed(6)}"`);
       lines.push(""); lines.push(`gamepad_use_per_scope_sensitivity_scalars "1"`);
     }
@@ -534,7 +536,13 @@ export default function ApexSensCalc() {
               <button key={p.id} className={`preset-btn${preset === p.id ? " active" : ""}`} onClick={() => { setPreset(p.id); if (comparePreset === p.id) setComparePreset("none"); }}>
                 <div className="preset-tag" data-tag={p.tag}>{p.tag}</div>
                 <div className="preset-name">{p.name}</div>
-                <div className="preset-desc">{p.desc}</div>
+                {(p.curve || PRESET_DATA[p.id]?.fov) && (
+                  <div className="info-badges">
+                    {p.curve && <span>{p.curve}</span>}
+                    {p.curve && PRESET_DATA[p.id]?.fov && <span>/</span>}
+                    {PRESET_DATA[p.id]?.fov && <span>FOV {PRESET_DATA[p.id].fov}</span>}
+                  </div>
+                )}
               </button>
             ))}
           </div>
