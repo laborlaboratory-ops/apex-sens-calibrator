@@ -37,7 +37,8 @@ function makeRatios(raw) {
 
 const PRESET_DATA = {
   lshun:     { fov: 104, raw: { "1x": 1.536745, "2x": 1.239769, "3x": 1.444829, "4x": 1.684433, "6x": 1.482260, "8x": 1.711567, "10x": 1.913590 }, iron: 1.536745 },
-  aruta:     { fov: 110, raw: { "1x": 3.029167, "2x": 2.225000, "3x": 2.280000, "4x": 2.630001, "6x": 6.587500, "8x": 6.620833, "10x": 6.820833 }, iron: 6.820833 },
+  aruta:     { fov: 110, raw: { "1x": 3.029167, "2x": 2.225000, "3x": 2.280000, "4x": 2.630001, "6x": 6.587500, "8x": 6.620833, "10x": 6.820833 }, iron: 6.820833,
+               alc: { base: "4-1", overrides: { "2x": "4-2", "3x": "4-2", "4x": "4-2" } } },
   satuki:    { fov: 104, raw: { "1x": 2.65, "2x": 2.87, "3x": 2.87, "4x": 2.87, "6x": 3.4, "8x": 3.4, "10x": 3.5 }, iron: 2.65 },
   curihara:  { fov: 104, raw: { "1x": 1.0, "2x": 1.0, "3x": 1.1, "4x": 1.1, "6x": 1.1, "8x": 1.1, "10x": 1.1 }, iron: 1.0 },
   lykq:      { fov: 104, raw: { "1x": 2.7, "2x": 2.6, "3x": 2.6, "4x": 2.6, "6x": 4.0, "8x": 4.0, "10x": 4.0 }, iron: 2.7 },
@@ -53,7 +54,7 @@ const PRESETS = [
   // { id: "satuki",    name: "satuki",            tag: "プロ",   curve: "4-1 リニア" },
   { id: "lykq",      name: "Pro Player",        tag: "プロ",   curve: "4-1 リニア" }, // 許諾取得後に本名へ変更
   // { id: "curihara",  name: "Curihara",          tag: "プロ",   curve: "4-3 リニア" },
-  { id: "aruta",     name: "あるた",            tag: "配信者", curve: null },
+  { id: "aruta",     name: "あるた",            tag: "配信者", curve: "4-1 リニア" },
   { id: "lshun",     name: "Lスターしゅんしゅん", tag: "配信者", curve: "4-3 クラシック" },
   { id: "kentoboss", name: "kentoboss",         tag: "配信者", curve: "4-1 リニア" },
 ];
@@ -238,6 +239,11 @@ style.textContent = `
   .preset-tag[data-tag="参考"] { color: var(--text-dim); }
   .preset-name { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
   .info-badges { display: flex; align-items: center; gap: 4px; margin-top: 5px; font-size: 10px; color: #9090aa; }
+  .alc-base-info { padding: 10px 16px 6px; font-size: 11px; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+  .alc-base-info strong { color: var(--text-primary); }
+  .alc-badge { font-size: 9px; font-weight: 700; font-family: 'Chakra Petch', sans-serif;
+    color: var(--apex-red); background: rgba(232,65,60,0.1); border: 1px solid rgba(232,65,60,0.3);
+    border-radius: 3px; padding: 1px 5px; margin-left: 7px; vertical-align: middle; letter-spacing: 0.5px; }
   .result-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   .result-table th {
     font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
@@ -666,6 +672,19 @@ export default function ApexSensCalc() {
         {/* ─── Results ─── */}
         <div className="section-label">算出結果</div>
         <div className="card" style={{ overflowX: "auto" }}>
+          {(() => {
+            const alc = PRESET_DATA[preset]?.alc;
+            if (!alc) return null;
+            const hasOverrides = Object.keys(alc.overrides || {}).length > 0;
+            return (
+              <div className="alc-base-info">
+                ベース設定: <strong>{alc.base} リニア</strong>
+                {hasOverrides && <span style={{ color: "var(--text-dim)", marginLeft: 10 }}>
+                  ／ 一部スコープは異なる設定
+                </span>}
+              </div>
+            );
+          })()}
           <table className="result-table">
             <thead>
               <tr>
@@ -679,9 +698,11 @@ export default function ApexSensCalc() {
               </tr>
             </thead>
             <tbody>
-              {results.map((r, i) => (
+              {results.map((r, i) => {
+                const alcOverride = PRESET_DATA[preset]?.alc?.overrides?.[r.name];
+                return (
                 <tr key={r.name}>
-                  <td>{r.name}</td>
+                  <td>{r.name}{alcOverride && <span className="alc-badge">{alcOverride}</span>}</td>
                   <td>{r.zoomFrom1x.toFixed(2)}x</td>
                   <td>{r.ratio.toFixed(4)}</td>
                   {hasRaw && <td style={{ color: "#e8413c" }}>{rawData[i].toFixed(2)}</td>}
@@ -689,7 +710,8 @@ export default function ApexSensCalc() {
                   <td style={{ fontSize: 12 }}>{r.scalar.toFixed(6)}</td>
                   {hasCurrent && <td className="hl-blue">{currentParsed[r.name].toFixed(2)}</td>}
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
 
