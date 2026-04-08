@@ -36,12 +36,14 @@ function makeRatios(raw) {
 
 const PRESET_DATA = {
   lshun:     { fov: 104, raw: { "1x": 1.536745, "2x": 1.239769, "3x": 1.444829, "4x": 1.684433, "6x": 1.482260, "8x": 1.711567, "10x": 1.913590 }, iron: 1.536745 },
-  aruta:     { fov: 110, raw: { "1x": 3.029167, "2x": 2.225000, "3x": 2.280000, "4x": 2.630001, "6x": 6.587500, "8x": 6.620833, "10x": 6.820833 }, iron: 6.820833,
-               alc: { base: "4-1", overrides: { "2x": "4-2", "3x": "4-2", "4x": "4-2" } } },
+  aruta:     { fov: 110, raw: { "1x": 3.0, "2x": 4.36, "3x": 4.85, "4x": 5.21, "6x": 5.88, "8x": 6.42, "10x": 6.82 }, iron: 6.82,
+               alc: { base: "4-1" } },
   satuki:    { fov: 104, raw: { "1x": 2.65, "2x": 2.87, "3x": 2.87, "4x": 2.87, "6x": 3.4, "8x": 3.4, "10x": 3.5 }, iron: 2.65 },
   curihara:  { fov: 104, raw: { "1x": 1.0, "2x": 1.0, "3x": 1.1, "4x": 1.1, "6x": 1.1, "8x": 1.1, "10x": 1.1 }, iron: 1.0 },
   lykq:      { fov: 104, raw: { "1x": 2.7, "2x": 2.6, "3x": 2.6, "4x": 2.6, "6x": 4.0, "8x": 4.0, "10x": 4.0 }, iron: 2.7 },
   kentoboss: { fov: 106, raw: { "1x": 4.33, "2x": 4.28, "3x": 4.45, "4x": 4.47, "6x": 4.1, "8x": 4.4, "10x": 4.6 }, iron: 4.33 },
+  maronn:    { fov: 110, raw: { "1x": 1.7, "2x": 1.7, "3x": 2.0, "4x": 2.0, "6x": 2.2, "8x": 2.2, "10x": 2.2 }, iron: 2.2,
+               alc: { base: "4-2" } },
 };
 
 const PRESET_RATIOS = {};
@@ -52,6 +54,7 @@ const PRESETS = [
   // 許諾未取得のため非表示（データはPRESET_DATAに保持）
   // { id: "satuki",    name: "satuki",            tag: "プロ",   curve: "4-1 リニア" },
   { id: "lykq",      name: "Pro Player",        tag: "プロ",   curve: "4-1 リニア" }, // 許諾取得後に本名へ変更
+  { id: "maronn",    name: "まろん",            tag: "プロ",   curve: "4-2 リニア" },
   // { id: "curihara",  name: "Curihara",          tag: "プロ",   curve: "4-3 リニア" },
   { id: "aruta",     name: "あるた",            tag: "配信者", curve: "4-1 リニア" },
   { id: "lshun",     name: "Lスターしゅんしゅん", tag: "配信者", curve: "4-3 クラシック" },
@@ -169,7 +172,22 @@ style.textContent = `
       radial-gradient(ellipse at 80% 100%, rgba(232,65,60,0.04) 0%, transparent 50%);
     pointer-events: none; z-index: 0;
   }
-  .apex-container { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 32px 20px 64px; }
+  .apex-container { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 32px 20px 64px; }
+  .apex-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start; }
+  .apex-main { min-width: 0; }
+  .apex-sidebar { position: sticky; top: 32px; }
+  .guide-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .guide-card h2 { font-size: 13px; font-weight: 700; color: var(--apex-red); letter-spacing: 1px; text-transform: uppercase; margin: 0 0 20px; display: flex; align-items: center; gap: 8px; }
+  .guide-card h2::before { content: ''; width: 12px; height: 2px; background: var(--apex-red); display: inline-block; }
+  .guide-section { margin-bottom: 24px; }
+  .guide-section:last-child { margin-bottom: 0; }
+  .guide-section h3 { font-size: 11px; font-weight: 700; color: var(--text-primary); letter-spacing: 0.5px; margin: 0 0 8px; }
+  .guide-section p { font-size: 11px; color: var(--text-secondary); line-height: 1.7; margin: 0 0 8px; font-family: sans-serif; }
+  .guide-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .guide-steps li { display: flex; gap: 8px; font-size: 11px; color: var(--text-secondary); font-family: sans-serif; line-height: 1.5; }
+  .guide-steps li::before { content: attr(data-n); min-width: 16px; height: 16px; background: rgba(232,65,60,0.15); border: 1px solid rgba(232,65,60,0.3); border-radius: 3px; color: var(--apex-red); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .guide-divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  @media (max-width: 720px) { .apex-layout { grid-template-columns: 1fr; } .apex-sidebar { position: static; } }
   .apex-header { text-align: center; margin-bottom: 40px; padding-top: 12px; }
   .apex-header h1 {
     font-size: 28px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin: 0 0 6px;
@@ -456,6 +474,8 @@ export default function ApexSensCalc() {
           <p>スコープ間感度統一ツール — 1倍を基準に全スコープの角速度を計算</p>
         </div>
 
+        <div className="apex-layout">
+        <div className="apex-main">
         {/* ─── Presets ─── */}
         <button className="section-label-toggle" onClick={() => setShowPresets(!showPresets)}>
           <div className="section-label">
@@ -695,6 +715,37 @@ export default function ApexSensCalc() {
             </div>
           </div>
         </div>
+        </div>{/* apex-main */}
+
+        {/* ─── Sidebar ─── */}
+        <div className="apex-sidebar">
+          <div className="guide-card">
+            <h2>使い方</h2>
+
+            <div className="guide-section">
+              <h3>① プリセットをそのまま使う</h3>
+              <ol className="guide-steps">
+                <li data-n="1">プリセットを選択</li>
+                <li data-n="2">「両方を入力」ボタンを押す</li>
+                <li data-n="3">算出結果の数字をゲーム内で入力</li>
+              </ol>
+            </div>
+
+            <hr className="guide-divider" />
+
+            <div className="guide-section">
+              <h3>② 自分の感度に当てはめる</h3>
+              <p>自分の好きな1倍感度・視野角はそのままに、有名プレイヤーと同じスコープ間バランスを2倍以降に自動で適用します。</p>
+              <ol className="guide-steps">
+                <li data-n="1">プリセットを選択</li>
+                <li data-n="2">自分の視野角と1倍感度を入力</li>
+                <li data-n="3">算出結果の数字をゲーム内で入力</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        </div>{/* apex-layout */}
       </div>
     </div>
   );
